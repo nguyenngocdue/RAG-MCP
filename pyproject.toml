@@ -1,0 +1,44 @@
+[project]
+name = "rag-anything-mcp-server"
+version = "0.1.0"
+description = "MCP Server for RAG-Anything - Multi-modal RAG system accessible via Model Context Protocol"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # Core MCP and async
+    "mcp>=1.0.0",
+    "aiofiles>=23.0.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    
+    # LightRAG for knowledge graph
+    "lightrag-hku>=1.0.0",
+    
+    # Basic document processing (lightweight)
+    "pypdf>=4.0.0",
+    "python-multipart>=0.0.6",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

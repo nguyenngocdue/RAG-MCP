@@ -1,0 +1,25 @@
+{
+  "name": "rag-anything-mcp",
+  "displayName": "RAG-Anything MCP Server",
+  "description": "Model Context Protocol server for RAG-Anything - Multi-modal document processing and retrieval",
+  "version": "0.1.0",
+  "serverInfo": {
+    "name": "rag-anything-server",
+    "version": "0.1.0"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "configuration": {
+    "command": "python",
+    "args": ["src/server.py"],
+    "env": {
+      "OPENAI_API_KEY": "",
+      "LLM_MODEL": "gpt-4o-mini",
+      "VISION_MODEL": "gpt-4o",
+      "EMBEDDING_MODEL": "text-embedding-3-large"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+HƯỚNG DẪN SỬ DỤNG RAG SYSTEM
+
+Giới thiệu về RAG
+=================
+
+RAG (Retrieval-Augmented Generation) là một kỹ thuật tiên tiến trong lĩnh vực AI, 
+kết hợp sức mạnh của việc tìm kiếm thông tin (Information Retrieval) và khả năng 
+sinh văn bản của các mô hình ngôn ngữ lớn (Large Language Models).
+
+Cách thức hoạt động
+===================
+
+1. Document Processing (Xử lý tài liệu)
+   - Hệ thống nhận đầu vào là các tài liệu (PDF, TXT, MD...)
+   - Trích xuất văn bản và chia thành các chunks
+   - Phân tích để tìm entities (thực thể) và relations (quan hệ)
+
+2. Knowledge Graph Construction (Xây dựng đồ thị tri thức)
+   - Tạo nodes cho mỗi entity (người, địa điểm, khái niệm...)
+   - Tạo edges thể hiện mối quan hệ giữa các entities
+   - Lưu trữ dưới dạng graph database
+
+3. Vector Embeddings (Mã hóa vector)
+   - Chuyển đổi text thành vector embeddings
+   - Sử dụng OpenAI embeddings (dimension 3072)
+   - Lưu vào vector database để tìm kiếm nhanh
+
+4. Query Processing (Xử lý truy vấn)
+   - Nhận câu hỏi từ người dùng
+   - Tìm kiếm trong knowledge graph và vector DB
+   - Kết hợp context tìm được
+   - Dùng LLM để sinh câu trả lời
+
+Ưu điểm của RAG
+===============
+
+✓ Độ chính xác cao: Trả lời dựa trên dữ liệu thực tế
+✓ Cập nhật linh hoạt: Thêm tài liệu mới dễ dàng
+✓ Giảm hallucination: LLM không bịa đặt thông tin
+✓ Truy xuất nguồn: Có thể truy vết nguồn gốc thông tin
+
+Ứng dụng thực tế
+================
+
+- Customer Support: Chatbot trả lời dựa trên tài liệu hướng dẫn
+- Research Assistant: Tìm kiếm và tổng hợp thông tin từ papers
+- Document QA: Hỏi đáp về nội dung tài liệu nội bộ
+- Knowledge Management: Quản lý và truy xuất tri thức tổ chức
+
+Kết luận
+========
+
+RAG là giải pháp hiệu quả cho các hệ thống AI cần truy xuất và xử lý 
+thông tin từ nguồn dữ liệu lớn. Kết hợp với LightRAG và knowledge graph,
+hệ thống có khả năng hiểu sâu hơn về mối quan hệ giữa các thông tin.
