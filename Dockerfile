@@ -30,5 +30,5 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 ENV PYTHONPATH=/app
 
-# Run the server
-CMD ["python", "run_server.py"]
+# Run the HTTP server for cloud deployment
+CMD ["python", "run_http_server.py"]
