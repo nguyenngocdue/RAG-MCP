@@ -1,0 +1,17 @@
+# Core MCP and async
+mcp>=1.0.0
+aiofiles>=23.0.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# LightRAG for knowledge graph
+lightrag-hku>=1.0.0
+
+# Basic document processing
+pypdf>=4.0.0
+python-multipart>=0.0.6
+Pillow>=10.0.0
+
+# Web server for HTTP endpoint
+uvicorn>=0.27.0
+fastapi>=0.109.0

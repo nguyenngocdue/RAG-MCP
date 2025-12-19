@@ -1,0 +1,31 @@
+services:
+  # Web Service for MCP Server
+  - type: web
+    name: rag-mcp-server
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        value: gpt-4o-mini
+      - key: VISION_MODEL
+        value: gpt-4o
+      - key: EMBEDDING_MODEL
+        value: text-embedding-3-large
+      - key: EMBEDDING_DIM
+        value: "3072"
+      - key: RAG_STORAGE_DIR
+        value: /app/rag_storage
+      - key: UPLOAD_DIR
+        value: /app/uploads
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MAX_FILE_SIZE
+        value: "100"
+      - key: MAX_CONCURRENT_FILES
+        value: "3"
+    disk:
+      name: rag-storage
+      mountPath: /app/rag_storage
+      sizeGB: 10

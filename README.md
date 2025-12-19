@@ -354,7 +354,66 @@ MIT License - See LICENSE file for details
 ## ⭐ Star History
 
 If you find this useful, please star the repo!
+## 🚀 Deployment to Render.com
 
+### Prerequisites
+
+1. **Render Account**: Sign up at [render.com](https://render.com)
+2. **OpenAI API Key**: Get your key from [OpenAI Platform](https://platform.openai.com)
+3. **Git Repository**: Push your code to GitHub/GitLab
+
+### Option 1: Deploy with render.yaml (Recommended)
+
+1. **Connect Repository**: Link your GitHub/GitLab repo to Render
+2. **Set Environment Variables**: In Render dashboard, add:
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - Other optional variables from `.env.example`
+3. **Deploy**: Render will auto-detect `render.yaml` and deploy
+
+### Option 2: Manual Deployment
+
+1. **Create New Web Service** in Render Dashboard
+2. **Configure Service**:
+   - **Environment**: Docker
+   - **Dockerfile Path**: `./Dockerfile`
+   - **Instance Type**: Standard (512 MB+ RAM recommended)
+3. **Add Disk** (for persistent storage):
+   - **Name**: `rag-storage`
+   - **Mount Path**: `/app/rag_storage`
+   - **Size**: 10 GB
+4. **Set Environment Variables**:
+   ```
+   OPENAI_API_KEY=your_key_here
+   LLM_MODEL=gpt-4o-mini
+   VISION_MODEL=gpt-4o
+   EMBEDDING_MODEL=text-embedding-3-large
+   ```
+5. **Deploy**: Click "Create Web Service"
+
+### Post-Deployment
+
+Your MCP server will be available at:
+```
+https://your-app-name.onrender.com/mcp
+```
+
+Connect from your MCP client using HTTP transport:
+```json
+{
+  "servers": {
+    "rag-document-mcp": {
+      "url": "https://your-app-name.onrender.com/mcp",
+      "type": "http"
+    }
+  }
+}
+```
+
+### Cost Estimation
+
+- **Free Tier**: 750 hours/month (suitable for testing)
+- **Starter**: $7/month (recommended for production)
+- **Storage**: $0.25/GB/month
 ## 📧 Contact
 
 For questions or support, please open an issue on GitHub.
