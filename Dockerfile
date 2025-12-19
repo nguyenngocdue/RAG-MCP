@@ -28,6 +28,7 @@ EXPOSE 8080
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
+ENV PYTHONPATH=/app
 
 # Run the server
-CMD ["python", "-m", "./src/server.py"]
+CMD ["python", "-m", "src.server"]
