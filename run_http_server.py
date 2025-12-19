@@ -58,6 +58,29 @@ async def health():
     }
 
 
+@app.get("/tools")
+async def list_tools():
+    """List all available MCP tools"""
+    if not mcp_server_instance:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "MCP server not initialized"}
+        )
+    
+    try:
+        tools = mcp_server_instance.tools.get_tool_definitions()
+        return {
+            "total": len(tools),
+            "tools": tools
+        }
+    except Exception as e:
+        logger.error(f"Error getting tools: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
 @app.post("/mcp")
 async def mcp_endpoint(request: dict):
     """MCP protocol endpoint"""
