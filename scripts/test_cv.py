@@ -53,7 +53,7 @@ async def main():
         print("✅ RAG initialized\n")
         
         # Extract and insert CV
-        cv_path = "./data/CV_Nguyen_Ngoc_Due_BIM_Developer.pdf"
+        cv_path = "./data/Python-Cheat-Sheet.pdf"
         print(f"2. Processing CV: {cv_path}")
         
         content = extract_pdf_content(cv_path)
@@ -67,10 +67,10 @@ async def main():
         print("4. Testing queries...\n")
         
         queries = [
-            "Give me Overview of the CV.",
-            "What is the work experience in the CV?",
-            "What skills are mentioned?",
-            "What programming languages and technologies are listed?",
+            "What is this file? What is its purpose?",
+            "Summarize its contents for me?",
+            "What are the key points?",
+            "What chapters are included?",
         ]
         
         for i, query in enumerate(queries, 1):
