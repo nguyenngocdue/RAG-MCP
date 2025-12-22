@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import uvicorn
 
 from src.server import RAGAnythingMCPServer
@@ -83,22 +83,29 @@ async def list_tools():
 
 @app.get("/mcp")
 async def mcp_endpoint():
-    """MCP protocol endpoint"""
+    """MCP protocol endpoint - returns Server-Sent Events stream"""
     if not mcp_server_instance:
         return JSONResponse(
             status_code=503,
             content={"error": "MCP server not initialized"}
         )
     
-    # Handle MCP requests here
-    # This is a placeholder - you'll need to implement MCP over HTTP
-    return {
-        "jsonrpc": "2.0",
-        "result": {
-            "message": "MCP server is running",
-            "tools_available": True
-        }
-    }
+    async def event_generator():
+        try:
+            # Send initialization message
+            yield f"data: {{'status': 'initialized', 'tools_available': True}}\n\n"
+            
+            # Keep connection alive
+            while True:
+                yield f"data: {{'status': 'ready'}}\n\n"
+                await asyncio.sleep(30)
+        except Exception as e:
+            logger.error(f"SSE error: {e}")
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream"
+    )
 
 
 if __name__ == "__main__":
