@@ -82,6 +82,7 @@ async def list_tools():
 
 
 @app.get("/mcp")
+@app.post("/mcp")
 async def mcp_endpoint():
     """MCP protocol endpoint - returns Server-Sent Events stream"""
     if not mcp_server_instance:
