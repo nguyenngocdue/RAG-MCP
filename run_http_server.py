@@ -11,9 +11,10 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 import uvicorn
+import json
 
 from src.server import RAGAnythingMCPServer
 from src.config import Config
@@ -83,30 +84,87 @@ async def list_tools():
 
 @app.get("/mcp")
 @app.post("/mcp")
-async def mcp_endpoint():
-    """MCP protocol endpoint - returns Server-Sent Events stream"""
+async def mcp_endpoint(request: Request):
+    """MCP protocol endpoint - handles JSON-RPC requests"""
     if not mcp_server_instance:
         return JSONResponse(
             status_code=503,
-            content={"error": "MCP server not initialized"}
+            content={"jsonrpc": "2.0", "error": {"code": -32603, "message": "MCP server not initialized"}}
         )
     
-    async def event_generator():
-        try:
-            # Send initialization message
-            yield f"data: {{'status': 'initialized', 'tools_available': True}}\n\n"
+    try:
+        # Get request body
+        if request.method == "POST":
+            body = await request.json()
+        else:
+            # For GET requests, check for query parameters
+            body = {"jsonrpc": "2.0", "method": "tools/list", "id": 1}
+        
+        # Handle JSON-RPC request
+        jsonrpc_version = body.get("jsonrpc", "2.0")
+        method = body.get("method")
+        params = body.get("params", {})
+        request_id = body.get("id")
+        
+        logger.info(f"MCP request: method={method}, params={params}")
+        
+        # Route to appropriate handler
+        if method == "tools/list":
+            # List available tools
+            tool_definitions = mcp_server_instance.tools.get_tool_definitions()
+            tools = [
+                {
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "inputSchema": tool["inputSchema"],
+                }
+                for tool in tool_definitions
+            ]
+            return JSONResponse({
+                "jsonrpc": jsonrpc_version,
+                "result": {"tools": tools},
+                "id": request_id
+            })
+        
+        elif method == "tools/call":
+            # Call a tool
+            tool_name = params.get("name")
+            tool_arguments = params.get("arguments", {})
             
-            # Keep connection alive
-            while True:
-                yield f"data: {{'status': 'ready'}}\n\n"
-                await asyncio.sleep(30)
-        except Exception as e:
-            logger.error(f"SSE error: {e}")
+            # Initialize RAG if needed
+            if not mcp_server_instance.rag_manager._initialized:
+                await mcp_server_instance.rag_manager.initialize()
+            
+            # Call the tool
+            result = await mcp_server_instance.tools.handle_tool_call(tool_name, tool_arguments)
+            
+            return JSONResponse({
+                "jsonrpc": jsonrpc_version,
+                "result": result,
+                "id": request_id
+            })
+        
+        else:
+            # Unknown method
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "jsonrpc": jsonrpc_version,
+                    "error": {"code": -32601, "message": f"Method not found: {method}"},
+                    "id": request_id
+                }
+            )
     
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream"
-    )
+    except Exception as e:
+        logger.error(f"MCP endpoint error: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "jsonrpc": "2.0",
+                "error": {"code": -32603, "message": str(e)},
+                "id": request.get("id") if isinstance(request, dict) else None
+            }
+        )
 
 
 if __name__ == "__main__":
