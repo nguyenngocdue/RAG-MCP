@@ -81,8 +81,8 @@ async def list_tools():
         )
 
 
-@app.post("/mcp")
-async def mcp_endpoint(request: dict):
+@app.get("/mcp")
+async def mcp_endpoint():
     """MCP protocol endpoint"""
     if not mcp_server_instance:
         return JSONResponse(
