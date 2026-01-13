@@ -5,6 +5,8 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     envVars:
+      - key: PORT
+        value: "4000"
       - key: OPENAI_API_KEY
         sync: false
       - key: LLM_MODEL
