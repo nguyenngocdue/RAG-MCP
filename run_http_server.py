@@ -2,19 +2,21 @@
 HTTP Server wrapper for RAG-Anything MCP Server
 Runs MCP server over HTTP for cloud deployment
 """
-import asyncio
 import logging
-import sys
 import os
+import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
-import json
+
+from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 
 from src.server import RAGAnythingMCPServer
 from src.config import Config
@@ -27,9 +29,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
-app = FastAPI(title="RAG-Anything MCP Server")
-
 # Initialize MCP server
 try:
     config = Config.load()
@@ -38,6 +37,32 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize MCP server: {e}")
     mcp_server_instance = None
+
+session_manager = None
+if mcp_server_instance:
+    session_manager = StreamableHTTPSessionManager(mcp_server_instance.server)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if session_manager:
+        async with session_manager.run():
+            yield
+    else:
+        yield
+
+
+# Create FastAPI app
+app = FastAPI(title="RAG-Anything MCP Server", lifespan=lifespan)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods including OPTIONS
+    allow_headers=["*"],  # Allows all headers
+)
 
 
 @app.get("/")
@@ -81,94 +106,19 @@ async def list_tools():
             content={"error": str(e)}
         )
 
-
-@app.get("/mcp")
-@app.post("/mcp")
-async def mcp_endpoint(request: Request):
-    """MCP protocol endpoint - handles JSON-RPC requests"""
-    if not mcp_server_instance:
+if session_manager:
+    app.mount("/mcp", session_manager.handle_request)
+else:
+    @app.api_route("/mcp", methods=["GET", "POST", "DELETE"])
+    async def mcp_unavailable():
         return JSONResponse(
             status_code=503,
-            content={"jsonrpc": "2.0", "error": {"code": -32603, "message": "MCP server not initialized"}}
-        )
-    
-    try:
-        # Get request body
-        if request.method == "POST":
-            body = await request.json()
-        else:
-            # For GET requests, check for query parameters
-            body = {"jsonrpc": "2.0", "method": "tools/list", "id": 1}
-        
-        # Handle JSON-RPC request
-        jsonrpc_version = body.get("jsonrpc", "2.0")
-        method = body.get("method")
-        params = body.get("params", {})
-        request_id = body.get("id")
-        
-        logger.info(f"MCP request: method={method}, params={params}")
-        
-        # Route to appropriate handler
-        if method == "tools/list":
-            # List available tools
-            tool_definitions = mcp_server_instance.tools.get_tool_definitions()
-            tools = [
-                {
-                    "name": tool["name"],
-                    "description": tool["description"],
-                    "inputSchema": tool["inputSchema"],
-                }
-                for tool in tool_definitions
-            ]
-            return JSONResponse({
-                "jsonrpc": jsonrpc_version,
-                "result": {"tools": tools},
-                "id": request_id
-            })
-        
-        elif method == "tools/call":
-            # Call a tool
-            tool_name = params.get("name")
-            tool_arguments = params.get("arguments", {})
-            
-            # Initialize RAG if needed
-            if not mcp_server_instance.rag_manager._initialized:
-                await mcp_server_instance.rag_manager.initialize()
-            
-            # Call the tool
-            result = await mcp_server_instance.tools.handle_tool_call(tool_name, tool_arguments)
-            
-            return JSONResponse({
-                "jsonrpc": jsonrpc_version,
-                "result": result,
-                "id": request_id
-            })
-        
-        else:
-            # Unknown method
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "jsonrpc": jsonrpc_version,
-                    "error": {"code": -32601, "message": f"Method not found: {method}"},
-                    "id": request_id
-                }
-            )
-    
-    except Exception as e:
-        logger.error(f"MCP endpoint error: {e}", exc_info=True)
-        return JSONResponse(
-            status_code=500,
-            content={
-                "jsonrpc": "2.0",
-                "error": {"code": -32603, "message": str(e)},
-                "id": request.get("id") if isinstance(request, dict) else None
-            }
+            content={"error": "MCP server not initialized"}
         )
 
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "8080"))
+    port = int(os.getenv("PORT", "4000"))
     logger.info(f"Starting HTTP server on port {port}")
     
     uvicorn.run(

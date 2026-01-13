@@ -53,7 +53,7 @@ async def main():
         print("✅ RAG initialized\n")
         
         # Extract and insert CV
-        cv_path = "./data/Python-Cheat-Sheet.pdf"
+        cv_path = "./data/CV_Nguyen_Ngoc_Due_BIM_Developer.pdf"
         print(f"2. Processing CV: {cv_path}")
         
         content = extract_pdf_content(cv_path)

@@ -5,6 +5,8 @@ Main server implementation using Model Context Protocol
 import asyncio
 import logging
 import sys
+import os
+from pathlib import Path
 from typing import Any, Sequence
 from mcp.server import Server
 from mcp.types import (
@@ -15,9 +17,12 @@ from mcp.types import (
 )
 import mcp.server.stdio
 
-from .config import Config
-from .rag_manager import RAGManager
-from .tools import MCPTools
+# Add parent directory to path to allow imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.config import Config
+from src.rag_manager import RAGManager
+from src.tools import MCPTools
 
 # Setup logging
 logging.basicConfig(
