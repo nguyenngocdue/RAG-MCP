@@ -85,6 +85,11 @@ VISION_MODEL=gpt-4o
 EMBEDDING_MODEL=text-embedding-3-large
 EMBEDDING_DIM=3072
 
+# Model Profile Configuration (optional)
+MODEL_PROFILE=openai_default
+MODEL_PROFILES_PATH=./model_profiles.json
+# Or set MODEL_PROFILES to a JSON object string with profile definitions
+
 # Storage Configuration
 RAG_STORAGE_DIR=./rag_storage
 UPLOAD_DIR=./uploads
@@ -93,6 +98,12 @@ MAX_FILE_SIZE=100  # MB
 # Server Configuration
 LOG_LEVEL=INFO
 ```
+
+Model profiles let you switch the entire model set with a single env var. If
+`MODEL_PROFILE` is set, it overrides `LLM_MODEL`, `VISION_MODEL`,
+`EMBEDDING_MODEL`, and `EMBEDDING_DIM` using either `MODEL_PROFILES` (JSON
+string) or `MODEL_PROFILES_PATH` (JSON file, defaults to
+`./model_profiles.json`).
 
 ### Running the Server
 

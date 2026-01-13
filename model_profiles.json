@@ -1,0 +1,50 @@
+{
+  "openai_default": {
+    "llm_model": "gpt-4o-mini",
+    "vision_model": "gpt-4o",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "deepseek_free": {
+    "llm_model": "deepseek/deepseek-r1-0528:free",
+    "vision_model": "deepseek/deepseek-r1-0528:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "gemini_flash_free": {
+    "llm_model": "google/gemini-2.0-flash-exp:free",
+    "vision_model": "google/gemini-2.0-flash-exp:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "llama_3_3_70b_free": {
+    "llm_model": "meta-llama/llama-3.3-70b-instruct:free",
+    "vision_model": "meta-llama/llama-3.3-70b-instruct:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "mistral_7b_free": {
+    "llm_model": "mistralai/mistral-7b-instruct:free",
+    "vision_model": "mistralai/mistral-7b-instruct:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "qwen3_4b_free": {
+    "llm_model": "qwen/qwen3-4b:free",
+    "vision_model": "qwen/qwen3-4b:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "qwen_vl_7b_free": {
+    "llm_model": "qwen/qwen-2.5-vl-7b-instruct:free",
+    "vision_model": "qwen/qwen-2.5-vl-7b-instruct:free",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  },
+  "gpt-4o-mini": {
+    "llm_model": "gpt-4o-mini",
+    "vision_model": "gpt-4o-mini",
+    "embedding_model": "text-embedding-3-large",
+    "embedding_dim": 3072
+  }
+}

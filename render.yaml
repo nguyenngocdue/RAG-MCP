@@ -27,6 +27,13 @@ services:
         value: "100"
       - key: MAX_CONCURRENT_FILES
         value: "3"
+      - key: MODEL_PROFILE
+        value: deepseek_free
+      - key: MODEL_PROFILES_PATH
+        value: ./model_profiles.json
+      - key: LLM_MAX_TOKENS
+        value: "2048"
+        
     disk:
       name: rag-storage
       mountPath: /app/rag_storage

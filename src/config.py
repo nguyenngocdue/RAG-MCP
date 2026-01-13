@@ -1,6 +1,8 @@
 """
 Configuration module for RAG-Anything MCP Server
 """
+import json
+import logging
 import os
 from pathlib import Path
 from typing import Optional
@@ -9,6 +11,33 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+
+def _load_model_profiles() -> dict:
+    profiles_json = os.getenv("MODEL_PROFILES")
+    if profiles_json:
+        try:
+            data = json.loads(profiles_json)
+        except json.JSONDecodeError as exc:
+            raise ValueError("MODEL_PROFILES is not valid JSON") from exc
+        if not isinstance(data, dict):
+            raise ValueError("MODEL_PROFILES must be a JSON object")
+        return data
+
+    profiles_path = os.getenv("MODEL_PROFILES_PATH", "./model_profiles.json")
+    if not Path(profiles_path).is_file():
+        return {}
+
+    try:
+        with open(profiles_path, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Model profiles file is not valid JSON: {profiles_path}") from exc
+    if not isinstance(data, dict):
+        raise ValueError("Model profiles file must contain a JSON object")
+    return data
 
 
 class APIConfig(BaseModel):
@@ -57,7 +86,37 @@ class Config(BaseModel):
     @classmethod
     def load(cls) -> "Config":
         """Load configuration from environment"""
-        return cls()
+        config = cls()
+        config.apply_model_profile()
+        return config
+
+    def apply_model_profile(self) -> None:
+        profile_name = os.getenv("MODEL_PROFILE")
+        if not profile_name:
+            return
+
+        logger.info("Applying model profile '%s'", profile_name)
+        profiles = _load_model_profiles()
+        profile = profiles.get(profile_name)
+        if profile is None:
+            raise ValueError(
+                f"MODEL_PROFILE '{profile_name}' not found in model profiles"
+            )
+        if not isinstance(profile, dict):
+            raise ValueError(f"Model profile '{profile_name}' must be a JSON object")
+
+        self.models.llm_model = profile.get("llm_model", self.models.llm_model)
+        self.models.vision_model = profile.get("vision_model", self.models.vision_model)
+        self.models.embedding_model = profile.get(
+            "embedding_model", self.models.embedding_model
+        )
+        if "embedding_dim" in profile:
+            try:
+                self.models.embedding_dim = int(profile["embedding_dim"])
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"Model profile '{profile_name}' has invalid embedding_dim"
+                ) from exc
 
     def validate_api_keys(self) -> bool:
         """Validate that required API keys are present"""

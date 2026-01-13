@@ -3,6 +3,7 @@ RAG Manager - Core LightRAG wrapper for the MCP server
 """
 import asyncio
 import logging
+import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from lightrag import LightRAG, QueryParam
@@ -37,10 +38,21 @@ class RAGManager:
                 logger.info("Initializing LightRAG...")
 
                 # Initialize LightRAG with standard functions
+                llm_model_kwargs: Dict[str, Any] = {}
+                llm_max_tokens = os.getenv("LLM_MAX_TOKENS")
+                if llm_max_tokens:
+                    try:
+                        llm_model_kwargs["max_tokens"] = int(llm_max_tokens)
+                    except ValueError:
+                        logger.warning(
+                            "Invalid LLM_MAX_TOKENS '%s'; ignoring.", llm_max_tokens
+                        )
+
                 self.rag = LightRAG(
                     working_dir=str(self.config.storage.rag_storage_dir),
                     llm_model_func=openai_complete_if_cache,
                     embedding_func=openai_embed,
+                    llm_model_kwargs=llm_model_kwargs,
                 )
                 
                 # IMPORTANT: Initialize storage backends

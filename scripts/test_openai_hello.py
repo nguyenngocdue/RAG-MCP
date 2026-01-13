@@ -16,22 +16,48 @@ async def main() -> None:
     config = Config.load()
     print("=== OpenAI Hello Test ===\n")
     print("Checking OpenAI API Key...")
-    print(f"Using model: {os.getenv('OPENAI_API_KEY', config.api.openai_api_key)}")
+    model = os.getenv("LLM_MODEL", config.models.llm_model)
+    base_url = config.api.openai_base_url
+    profile = os.getenv("MODEL_PROFILE")
+    api_key = config.api.openai_api_key
+    max_tokens_env = os.getenv("LLM_MAX_TOKENS")
+    max_tokens = None
+    if max_tokens_env:
+        try:
+            max_tokens = int(max_tokens_env)
+        except ValueError:
+            print(f"Invalid LLM_MAX_TOKENS: {max_tokens_env}. Ignoring.")
 
-    if not config.api.openai_api_key:
+    def _mask_key(value: str) -> str:
+        if not value:
+            return "missing"
+        if len(value) <= 10:
+            return "***"
+        return f"{value[:6]}...{value[-4:]}"
+
+    print(f"Using model: {model}")
+    if profile:
+        print(f"Model profile: {profile}")
+    print(f"Base URL: {base_url}")
+    print(f"API key: {_mask_key(api_key)}")
+
+    if not api_key:
         print("OPENAI_API_KEY is missing. Set it in .env or the environment.")
         return
 
-    model = os.getenv("LLM_MODEL", config.models.llm_model)
-    prompt = "hello"
+    prompt = "hello, how are you?"
 
     try:
+        kwargs = {}
+        if max_tokens is not None:
+            kwargs["max_tokens"] = max_tokens
         result = await openai_complete_if_cache(
             model,
             prompt,
             system_prompt="Reply briefly to confirm the API key works.",
-            api_key=config.api.openai_api_key,
-            base_url=config.api.openai_base_url,
+            api_key=api_key,
+            base_url=base_url,
+            **kwargs,
         )
     except Exception as exc:
         print(f"OpenAI call failed: {exc}")
